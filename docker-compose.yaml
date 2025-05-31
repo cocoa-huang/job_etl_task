@@ -1,0 +1,50 @@
+services:
+  scrapy:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: scrapy_service
+    volumes:
+      - .:/app
+    depends_on:
+      - mongodb
+      - redis
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/
+      - MONGO_DATABASE=jobs
+      - MONGO_COLLECTION=jobs
+      - REDIS_URL=redis://redis:6379/0
+      - PYTHONPATH=/app
+    # Command is now handled by the Dockerfile
+    networks:
+      - jobs_network
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - jobs_network
+
+  redis:
+    image: redis:7.0
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - jobs_network
+
+networks:
+  jobs_network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  redis_data:
